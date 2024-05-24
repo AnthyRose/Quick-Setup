@@ -26,10 +26,9 @@ deb-src http://ftp.uk.debian.org/debian/ bookworm-backports main
 deb http://ftp.uk.debian.org/debian/ bookworm main contrib non-free
 deb-src http://ftp.uk.debian.org/debian/ bookworm main contrib non-free
 EOF
-    else
-        echo "User selected No, exit status was $?."
     fi    
 }
+
 
 package_manager_check() {
     case $1 in
@@ -48,13 +47,29 @@ package_manager_check() {
     esac
 }
 
-choose_alternative_package_manager() {
-    selection=$(whiptail --title "Universal Packaging Systems" --checklist \
-    "Select universal package manager if wanted." 20 78 4 \
-    "Flatpak" "" OFF \
-    "Snap" "" OFF \
-    3>&1 1>&2 2>&3)
-    echo "$selection"
+snap_store_select() {
+    if whiptail --title "Snap Store" --yesno "Should the Snap Store be installed?" 8 78; then
+        echo 1
+    else
+        echo 0
+    fi
+}   
+
+flatpak_select() {
+    if whiptail --title "Flatpak" --yesno "Should Flatpak be installed?" 8 78; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+snap_select() {
+    if whiptail --title "Snap" --yesno "Should Snap be installed?" 8 78; then
+        whiptail --title "Snap Warning" --msgbox "Snap packages are known to have issues compared to flatpak packages. Debian runs an outdated snap that can encounter issues with some packages. Snaps are also known to be most campatible with Gnome. With other Desktop Environments having issues with Snaps which flatpaks don't." 12 78
+        echo 1
+    else
+        echo 0
+    fi
 }
 
 choosen_de() {
@@ -76,12 +91,15 @@ check_distro() {
 
 # Calling the function
 distro=$(check_distro)
-echo "Your current distro is $distro."
+#echo "Your current distro is $distro."
 package_manager=$(package_manager_check "$distro")
+
 
 whiptail --title "About" --msgbox "This program is used to quickly configure a default Linux install on my computers. Other people can use this program, However, it will be developed with my computer specifications in mind. You are welcome to fork this script and alter it for your own use." 10 78
 
 debian_sources_list_conf
 desktop=$(choosen_de)
-alternative_package_manager=$(choose_alternative_package_manager)
+Flatpak=$(flatpak_select)
+Snap=$(snap_select)
+
 echo "You have selected $alternative_package_manager as your alternative package manager."
